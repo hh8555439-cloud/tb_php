@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 session_start();
-require_once 'db_connection.php';
+require_once 'config.php';
 
 $response = ['success' => false, 'message' => '', 'errors' => []];
 
@@ -23,8 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (empty($response['errors'])) {
     try {
-      $db = Database::getInstance();
-
       // 检查用户名和邮箱唯一性
       $stmt = $db->prepare("SELECT id FROM users WHERE username = :username OR email = :email");
       $stmt->execute([':username' => $username, ':email' => $email]);
