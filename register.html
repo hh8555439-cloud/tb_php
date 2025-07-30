@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户注册</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      height: 90vh;
+      display: flex;
+      /* 启用 Flexbox */
+      flex-direction: column;
+      /* 垂直排列子元素 */
+      justify-content: center;
+      /* 垂直居中 */
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.8em;
+      margin-top: 5px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .login-link {
+      margin-top: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>用户注册</h1>
+  <form id="registerForm">
+    <div class="form-group">
+      <label for="username">用户名:</label>
+      <input type="text" id="username" name="username" required>
+      <div id="usernameError" class="error"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="email">邮箱:</label>
+      <input type="email" id="email" name="email" required>
+      <div id="emailError" class="error"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">密码:</label>
+      <input type="password" id="password" name="password" required>
+      <div id="passwordError" class="error"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="confirm_password">确认密码:</label>
+      <input type="password" id="confirm_password" name="confirm_password" required>
+      <div id="confirmPasswordError" class="error"></div>
+    </div>
+
+    <button type="submit">注册</button>
+
+    <div class="login-link">
+      已有账号？<a href="login.php">立即登录</a>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      // 清除之前的错误信息
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+      // 获取表单数据
+      const formData = new FormData(this);
+
+      // 发送AJAX请求
+      fetch('register.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('注册成功！');
+            window.location.href = 'login.php'; // 跳转到首页
+          } else {
+            // 显示错误信息
+            for (const [field, message] of Object.entries(data.errors)) {
+              document.getElementById(field + 'Error').textContent = message;
+            }
+            alert(data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('网络错误，请稍后再试');
+        });
+    });
+  </script>
+</body>
+
+</html>
