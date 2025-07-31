@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="always" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+</head>
+
+<body>
+    <div id="result">
+
+    </div>
+    <script src="ToolGood.Words.StringSearch.js"></script>
+    <script src="ToolGood.Words.WordsSearch.js"></script>
+    <script src="ToolGood.Words.Pinyin.js"></script>
+    <script src="ToolGood.Words.Translate.js"></script>
+    <script>
+        function log(txt) {
+            var ele = document.getElementById("result");
+            ele.innerText = ele.innerText + "\r\n" + txt;
+        }
+        var s = "中国|国人|zg人";
+        var test = "我是中国人";
+
+        log("-----------------------------------  StringSearch  -----------------------------------");
+        var iwords = new StringSearch();
+        iwords.SetKeywords(s.split('|'));
+
+        log("StringSearch ContainsAny is run.");
+        var b = iwords.ContainsAny(test);
+        if (b == false) {
+            log("StringSearch ContainsAny is error.............................");
+        }
+
+        log("StringSearch FindFirst is run.");
+        var f = iwords.FindFirst(test);
+        if (f != "中国") {
+            log("StringSearch FindFirst is error.............................");
+        }
+
+        log("StringSearch FindAll is run.");
+        var all = iwords.FindAll(test);
+        if (all[0] != "中国") {
+            log("StringSearch FindAll is error.............................");
+        }
+        if (all[1] != "国人") {
+            log("StringSearch FindAll is error.............................");
+        }
+        if (all.length != 2) {
+            log("StringSearch FindAll is error.............................");
+        }
+
+        log("StringSearch Replace is run.");
+        var str = iwords.Replace(test, '*');
+        if (str != "我是***") {
+            log("StringSearch Replace is error.............................");
+        }
+
+
+        log("-----------------------------------  WordsSearch  -----------------------------------");
+
+        var wordsSearch = new WordsSearch();
+        wordsSearch.SetKeywords(s.split('|'));
+
+        log("WordsSearch ContainsAny is run.");
+        b = wordsSearch.ContainsAny(test);
+        if (b == false) {
+            log("WordsSearch ContainsAny is error.............................");
+        }
+
+
+
+        log("WordsSearch FindFirst is run.");
+        var f = wordsSearch.FindFirst(test);
+        if (f.Keyword != "中国") {
+            log("WordsSearch FindFirst is error.............................");
+        }
+
+
+        log("WordsSearch FindAll is run.");
+        var alls = wordsSearch.FindAll(test);
+        if (alls[0].Keyword != "中国") {
+            log("WordsSearch FindAll is error.............................");
+        }
+        if (alls[1].Keyword != "国人") {
+            log("WordsSearch FindAll is error.............................");
+        }
+        if (alls.length != 2) {
+            log("WordsSearch FindAll is error.............................");
+        }
+        if (alls[0].Start != 2) {
+            log("WordsSearch FindAll is error.............................");
+        }
+        if (alls[0].End != 3) {
+            log("WordsSearch FindAll is error.............................");
+        }
+        if (alls[0].Index != 0) {
+            log("WordsSearch FindAll is error.............................");
+        }
+
+
+
+
+        log("WordsSearch Replace is run.");
+        var t = wordsSearch.Replace(test, '*');
+        if (str != "我是***") {
+            log("WordsSearch Replace is error.............................");
+        }
+
+
+        log("-----------------------------------  Pinyin  -----------------------------------");
+        var pinyin = new Pinyin();
+
+        log("Pinyin GetPinyinForName is run.");
+        py = pinyin.GetPinyinForName("单一一");
+        if (py != "ShanYiYi") {
+            log("Pinyin GetPinyinForName is error.............................");
+        }
+
+        log("Pinyin GetPinyinForName is run.");
+        py = pinyin.GetPinyinForName("单一一", true);
+        if (py != "ShànYīYī") {
+            log("Pinyin GetPinyinForName is error.............................");
+        }
+
+        log("Pinyin GetAllPinyin is run.");
+        var t = pinyin.GetAllPinyin('芃');
+        if (t[0] != "Peng") {
+            log("Pinyin GetAllPinyin is error.............................");
+        }
+
+        log("Pinyin GetPinyin is run.");
+        var b = pinyin.GetPinyin("摩擦棒");
+        if (b != "MoCaBang") {
+            log("Pinyin GetPinyin is error.............................");
+        }
+
+
+        log("Pinyin GetPinyin is run.");
+        b = pinyin.GetPinyin("秘鲁");
+        if (b != "BiLu") {
+            log("Pinyin GetPinyin is error.............................");
+        }
+
+
+        log("Pinyin GetPinyin is run.");
+        py = pinyin.GetPinyin("快乐，乐清");
+        if (py != "KuaiLe，YueQing") {
+            log("Pinyin GetPinyin is error.............................");
+        }
+
+        log("Pinyin GetPinyin is run.");
+        py = pinyin.GetPinyin("快乐清理");
+        if (py != "KuaiLeQingLi") {
+            log("Pinyin GetPinyin is error.............................");
+        }
+
+        log("Pinyin GetPinyin is run.");
+        py = pinyin.GetPinyin("我爱中国");
+        if (py != "WoAiZhongGuo") {
+            log("Pinyin GetPinyin is error.............................");
+        }
+
+
+        log("Pinyin GetPinyin is run.");
+        py = pinyin.GetPinyin("我爱中国", true);
+        if (py != "WǒÀiZhōngGuó") {
+            log("Pinyin GetPinyin is error.............................");
+        }
+
+        log("Pinyin GetFirstPinyin is run.");
+        py = pinyin.GetFirstPinyin("我爱中国");
+        if (py != "WAZG") {
+            log("Pinyin GetFirstPinyin is error.............................");
+        }
+
+        log("Pinyin GetAllPinyin is run.");
+        var pys = pinyin.GetAllPinyin('传');
+        if (pys[0] != "Chuan") {
+            log("Pinyin GetAllPinyin is error.............................");
+        }
+        if (pys[1] != "Zhuan") {
+            log("Pinyin GetAllPinyin is error.............................");
+        }
+        log("-----------------------------------  Translate  -----------------------------------");
+        var translate = new Translate();
+
+        log("Translate ToSimplifiedChinese is run.");
+        var tw = translate.ToSimplifiedChinese("壹佰贰拾叁億肆仟伍佰陆拾柒萬捌仟玖佰零壹元壹角贰分");
+        if (tw != "壹佰贰拾叁亿肆仟伍佰陆拾柒万捌仟玖佰零壹元壹角贰分") {
+            log("Translate ToSimplifiedChinese is error.............................");
+        }
+
+        log("Translate ToTraditionalChinese is run.");
+        var tw = translate.ToTraditionalChinese("我爱中国");
+        if (tw != "我愛中國") {
+            log("Translate 我爱中国 ToTraditionalChinese is error.............................");
+        }
+ 
+        log("Translate ToTraditionalChinese is run.");
+        var tw = translate.ToTraditionalChinese("原代码11", 2);
+        if (tw != "原始碼11") {
+            log("Translate 原代码11 ToTraditionalChinese is error.............................");
+        }
+ 
+        log("Translate ToTraditionalChinese is run.");
+        var tw = translate.ToTraditionalChinese("反反复复", 2);
+        if (tw != "反反覆覆") {
+            log("Translate ToTraditionalChinese is error.............................");
+        }
+
+        log("Translate ToTraditionalChinese is run.");
+        var tw = translate.ToTraditionalChinese("这人考虑事情总是反反复复的", 2);
+        if (tw != "這人考慮事情總是反反覆覆的") {
+            log("Translate ToTraditionalChinese is error.............................");
+        }
+
+
+        log("-----------------------------------  Test End  -----------------------------------");
+
+    </script>
+</body>
+
+</html>
