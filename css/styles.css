@@ -1,0 +1,206 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.comment-section {
+  margin-bottom: 30px;
+}
+
+.comment {
+  font-size: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.user-name {
+  font-weight: bold;
+}
+
+.comment-content {
+  margin-bottom: 10px;
+}
+
+.comment-footer {
+  color: #666;
+  font-size: 12px;
+}
+
+.reply-btn {
+  color: #1890ff;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 15px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.reply-btn:hover {
+  background: #e6f7ff;
+}
+
+.answer {
+  font-size: 14px;
+  margin-left: 30px;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.comment-form {
+  margin-top: 30px;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* 新增文本框边界控制 */
+.comment-input,
+.reply-input {
+  box-sizing: border-box;
+  max-width: 100%;
+  width: calc(100% - 20px);
+  /* 留出边距 */
+  margin: 0 10px 10px 0;
+}
+
+.submit-btn {
+  padding: 8px 15px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.message-block {
+  font-size: 18px;
+  margin-bottom: 30px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.05);
+  padding: 20px;
+}
+
+.comment-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.toggle-comments-btn {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  background: #f0f5ff;
+  border: none;
+  color: #1890ff;
+  border-radius: 4px;
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.toggle-comments-btn:hover {
+  background: #e6f7ff;
+}
+
+.delete-btn {
+  color: #fff;
+  background: #ff4d4f;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #ff7875;
+}
+
+/* 新增回复弹窗样式 */
+.reply-modal-container {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+}
+
+.reply-modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 400px;
+  /* 从300px增加到400px */
+  max-width: 90vw;
+}
+
+/* 确保弹窗文本框适应容器 */
+.reply-modal-content {
+  box-sizing: border-box;
+  padding: 20px !important;
+}
+
+.reply-title {
+  margin-top: 0;
+}
+
+.reply-input {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.reply-actions {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.cancel-btn {
+  padding: 6px 12px;
+  background: #aaa;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.cancel-btn:hover {
+  background: #999;
+}
