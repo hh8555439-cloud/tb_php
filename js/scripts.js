@@ -465,8 +465,8 @@ document.getElementById('submit-comment').onclick = async function () {
 
 let replyContext = {}; // 用于保存当前回复的上下文
 
-// 准备回复
-function prepareReply(rootId, toUserId, answerId = -1, goodsId = '', toUserName = '') {
+// 将函数声明移至文件顶部
+window.prepareReply = function (rootId, toUserId, answerId = -1, goodsId = '', toUserName = '') {
   const userId = document.getElementById('user-id').value;
   if (!userId) {
     alert('请先登录后再回复');
@@ -477,7 +477,15 @@ function prepareReply(rootId, toUserId, answerId = -1, goodsId = '', toUserName 
   document.getElementById('reply-content').value = '';
   document.getElementById('reply-title').textContent = toUserName ? `回复 @${toUserName}` : '回复';
   document.getElementById('reply-modal').style.display = 'flex';
-}
+};
+
+// 原函数定义位置改为引用
+document.querySelectorAll('.reply-btn').forEach(btn => {
+  btn.onclick = function () {
+    const args = JSON.parse(this.dataset.args);
+    window.prepareReply(...args);
+  };
+});
 
 // 取消按钮
 document.getElementById('reply-cancel').onclick = function () {
@@ -509,7 +517,7 @@ document.getElementById('reply-submit').addEventListener('click', function () {
   const userId = document.getElementById('user-id').value;
 
   const formData = new FormData();
-  formData.append('content', filteredContent.original);
+  formData.append('content', filteredContent);
   formData.append('user_id', userId);
   formData.append('goods_id', replyContext.goodsId);
   formData.append('to_user_id', replyContext.toUserId);
