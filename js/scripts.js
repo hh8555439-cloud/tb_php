@@ -507,9 +507,12 @@ document.getElementById('reply-submit').addEventListener('click', function () {
 
   // 显示敏感词警告
   if (safe == false) {
-    const confirmMsg = `内容包含敏感词: ${hits.Keyword}...\n\n无法提交！`;
-    alert(confirmMsg);
-    retrun;
+    const confirmMsg = `内容包含敏感词: ${hits.Keyword}\n\n是否发送过滤后的内容？\n（原内容将被替换为：${filtered}）`;
+    if (!confirm(confirmMsg)) return;
+
+    // 用户确认后使用过滤内容
+    document.getElementById('reply-content').value = filtered;
+    safe = true; // 标记为安全以继续提交
   }
 
   // 前端过滤
