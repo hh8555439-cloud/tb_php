@@ -1,3 +1,64 @@
+// ================= 敏感词过滤模块 =================
+
+// 创建实例
+const search = new WordsSearch();
+// 从文件加载敏感词库
+async function loadSensitiveWords() {
+  try {
+    const response = await fetch('./ToolGoodWords/sensitiveWords.txt');
+    if (!response.ok) throw new Error('词库加载失败');
+    const text = await response.text();
+    return text;
+
+  } catch (error) {
+    console.error('加载敏感词库失败:', error);
+    // 默认词库
+    return [
+      '脏话1', '脏话2', '政治敏感词', '色情词'
+    ];
+  }
+}
+
+// 使用实际存在的WordsSearch类
+let wordSearch;
+(async function initScanner() {
+  try {
+    const words = await loadSensitiveWords();
+    wordSearch = new WordsSearch(); // 需确认导出方式
+    wordSearch.SetKeywords(words.split('|'));
+  } catch (e) {
+    console.error('模块加载失败:', e);
+  }
+})();
+
+// 修正版敏感词过滤
+function filterSensitiveWords(content) {
+  if (!content || !wordSearch) return {
+    filtered: content,
+    hits: [],
+    safe: true
+  };
+
+  // 检测简体敏感词
+  const result = wordSearch.FindFirst(content);
+  return {
+    filtered: wordSearch.Replace(content, '*'),
+    hits: result,
+    safe: result == null
+  };
+}
+
+// 新增HTML转义函数
+function escapeHtml(unsafe) {
+  if (!unsafe) return unsafe;
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getUserInfo() {
   fetch('api.php?action=get_user')
     .then(res => res.json())
@@ -67,9 +128,9 @@ function renderMessages(messages) {
     <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(message.created_at).toLocaleString()}</span>
     ${deleteBtn}
   </div>
-  <div class="message-content">${message.content}</div>
+  <div class="message-content">${escapeHtml(message.content)}</div>
   <div class="message-actions" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-    <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, '', ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="margin-left:0;">回复</span>
+    <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, -1, ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="margin-left:0;">回复</span>
     <button class="toggle-comments-btn" data-id="${message.id}">展开评论</button>
   </div>
   <div class="comments-list" id="comments-list-${message.id}" style="display:none;"></div>
@@ -98,9 +159,9 @@ function renderMessages(messages) {
         <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(message.created_at).toLocaleString()}</span>
         ${deleteBtn}
       </div>
-      <div class="message-content">${message.content}</div>
+      <div class="message-content">${escapeHtml(message.content)}</div>
       <div class="message-actions" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-        <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, '', ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="margin-left:0;">回复</span>
+        <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, -1, ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="margin-left:0;">回复</span>
         <button class="toggle-comments-btn" data-id="${message.id}">展开评论</button>
       </div>
       <div class="comments-list" id="comments-list-${message.id}" style="display:none;"></div>
@@ -151,7 +212,7 @@ function renderComments(comments, container) {
     <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(comment.create_time).toLocaleString()}</span>
     ${deleteBtn}
   </div>
-  <div class="comment-content">${comment.content}</div>
+  <div class="comment-content">${escapeHtml(comment.content)}</div>
   <div class="comment-footer">
     <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
   </div>
@@ -180,7 +241,7 @@ function renderComments(comments, container) {
         <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(answer.create_time).toLocaleString()}</span>
         ${deleteBtn2}
       </div>
-      <div class="comment-content">${answer.content}</div>
+      <div class="comment-content">${escapeHtml(answer.content)}</div>
       <div class="comment-footer">
         <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
       </div>
@@ -213,7 +274,7 @@ function renderComments(comments, container) {
     <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(answer.create_time).toLocaleString()}</span>
     ${deleteBtn2}
   </div>
-  <div class="comment-content">${answer.content}</div>
+  <div class="comment-content">${escapeHtml(answer.content)}</div>
   <div class="comment-footer">
     <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
   </div>
@@ -250,7 +311,7 @@ function renderComments(comments, container) {
         <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(comment.create_time).toLocaleString()}</span>
         ${deleteBtn}
       </div>
-      <div class="comment-content">${comment.content}</div>
+      <div class="comment-content">${escapeHtml(comment.content)}</div>
       <div class="comment-footer">
         <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
       </div>
@@ -277,7 +338,7 @@ function renderComments(comments, container) {
             <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(answer.create_time).toLocaleString()}</span>
             ${deleteBtn2}
           </div>
-          <div class="comment-content">${answer.content}</div>
+          <div class="comment-content">${escapeHtml(answer.content)}</div>
           <div class="comment-footer">
             <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
           </div>
@@ -348,97 +409,64 @@ function deleteComment(id, goodsId) {
     });
 }
 
-// 提交评论（针对某条留言）
-function submitComment(goodsId) {
-  const userId = document.getElementById('user-id').value;
-  if (!userId) {
-    alert('请先登录后再评论');
-    window.location.href = 'login.php';
-    return;
-  }
-  const content = document.getElementById('comment-content-' + goodsId).value.trim();
-  if (!content) {
-    alert('评论内容不能为空');
+// 修改留言提交逻辑
+document.getElementById('submit-comment').onclick = async function () {
+  const rawContent = document.getElementById('comment-content').value;
+
+  // 空内容检查
+  if (!rawContent || rawContent.trim() === '') {
+    alert('留言内容不能为空');
     return;
   }
 
-  const formData = new FormData();
-  formData.append('content', content);
-  formData.append('user_id', userId);
-  formData.append('goods_id', goodsId);
+  // 获取敏感词检测结果
+  const { safe, filtered, hits } = filterSensitiveWords(rawContent);
 
-  const toUserId = document.getElementById('reply-to').value;
-  const rootId = document.getElementById('reply-root').value;
-  const toAnswerId = document.getElementById('reply-answer').value;
-
-  if (toUserId && rootId) {
-    formData.append('to_user_id', toUserId);
-    formData.append('root_id', rootId);
-    formData.append('to_answer_id', toAnswerId);
-    formData.append('type', 'answer');
+  // 显示敏感词警告
+  if (safe == false) {
+    const confirmMsg = `内容包含敏感词: ${hits.Keyword}...\n\n无法提交！`;
+    alert(confirmMsg);
+    return;
   }
 
-  fetch('api.php?action=add_comment', {
-    method: 'POST',
-    body: formData
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.code === 0) {
-        document.getElementById('comment-content-' + goodsId).value = '';
-        document.getElementById('reply-to').value = '';
-        document.getElementById('reply-root').value = '';
-        document.getElementById('reply-answer').value = '';
-        // 重新加载评论
-        const commentListDiv = document.getElementById('comments-list-' + goodsId);
-        loadComments(goodsId, commentListDiv);
-      } else {
-        alert('评论失败: ' + data.message);
-      }
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-// 提交留言
-document.getElementById('submit-comment').addEventListener('click', function () {
+  // 获取用户ID
   const userId = document.getElementById('user-id').value;
   if (!userId) {
     alert('请先登录后再留言');
     window.location.href = 'login.php';
     return;
   }
-  const content = document.getElementById('comment-content').value.trim();
-  if (!content) {
-    alert('留言内容不能为空');
-    return;
-  }
 
+  // 准备提交数据（使用过滤后的内容）
   const formData = new FormData();
   formData.append('user_id', userId);
-  formData.append('content', content);
+  formData.append('content', safe ? rawContent : filtered);
 
-  fetch('api.php?action=add_message', {
-    method: 'POST',
-    body: formData
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.code === 0) {
-        document.getElementById('comment-content').value = '';
-        loadMessages(); // 重新加载留言
-        alert('留言成功！');
-      } else {
-        alert('留言失败: ' + data.message);
-      }
-    })
-    .catch(error => alert('留言失败: ' + error));
-});
+  // 执行提交
+  try {
+    const response = await fetch('api.php?action=add_message', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+
+    if (data.code === 0) {
+      document.getElementById('comment-content').value = '';
+      loadMessages();
+      alert('留言成功！');
+    } else {
+      alert('留言失败: ' + data.message);
+    }
+  } catch (error) {
+    alert('留言失败: ' + error);
+  }
+};
 
 
 let replyContext = {}; // 用于保存当前回复的上下文
 
-// 准备回复
-function prepareReply(rootId, toUserId, answerId = -1, goodsId = '', toUserName = '') {
+// 将函数声明移至文件顶部
+window.prepareReply = function (rootId, toUserId, answerId = -1, goodsId = '', toUserName = '') {
   const userId = document.getElementById('user-id').value;
   if (!userId) {
     alert('请先登录后再回复');
@@ -449,7 +477,15 @@ function prepareReply(rootId, toUserId, answerId = -1, goodsId = '', toUserName 
   document.getElementById('reply-content').value = '';
   document.getElementById('reply-title').textContent = toUserName ? `回复 @${toUserName}` : '回复';
   document.getElementById('reply-modal').style.display = 'flex';
-}
+};
+
+// 原函数定义位置改为引用
+document.querySelectorAll('.reply-btn').forEach(btn => {
+  btn.onclick = function () {
+    const args = JSON.parse(this.dataset.args);
+    window.prepareReply(...args);
+  };
+});
 
 // 取消按钮
 document.getElementById('reply-cancel').onclick = function () {
@@ -457,20 +493,39 @@ document.getElementById('reply-cancel').onclick = function () {
 };
 
 // 提交回复
-document.getElementById('reply-submit').onclick = function () {
-  const userId = document.getElementById('user-id').value;
-  const content = document.getElementById('reply-content').value.trim();
-  if (!content) {
+document.getElementById('reply-submit').addEventListener('click', function () {
+  const rawContent = document.getElementById('reply-content').value;
+
+  // 空内容检查
+  if (!rawContent || rawContent.trim() === '') {
     alert('回复内容不能为空');
     return;
   }
+
+  // 获取敏感词检测结果
+  const { safe, filtered, hits } = filterSensitiveWords(rawContent);
+
+  // 显示敏感词警告
+  if (safe == false) {
+    const confirmMsg = `内容包含敏感词: ${hits.Keyword}\n\n是否发送过滤后的内容？\n（原内容将被替换为：${filtered}）`;
+    if (!confirm(confirmMsg)) return;
+
+    // 用户确认后使用过滤内容
+    document.getElementById('reply-content').value = filtered;
+    safe = true; // 标记为安全以继续提交
+  }
+
+  // 前端过滤
+  const filteredContent = filtered;
+  const userId = document.getElementById('user-id').value;
+
   const formData = new FormData();
-  formData.append('content', content);
+  formData.append('content', filteredContent);
   formData.append('user_id', userId);
   formData.append('goods_id', replyContext.goodsId);
   formData.append('to_user_id', replyContext.toUserId);
   formData.append('root_id', replyContext.rootId);
-  formData.append('to_answer_id', replyContext.answerId === '' ? -1 : replyContext.answerId);
+  formData.append('to_answer_id', replyContext.answerId);
   formData.append('type', 'answer');
   if (replyContext.rootId == 0) {
     formData.append('type', 'root');
@@ -492,4 +547,18 @@ document.getElementById('reply-submit').onclick = function () {
       }
     })
     .catch(error => alert('回复失败: ' + error));
-};
+});
+
+// 在文件末尾添加初始化调用
+// 页面加载时自动执行
+window.addEventListener('DOMContentLoaded', function () {
+  // 获取用户信息
+  getUserInfo();
+
+  // 加载留言
+  loadMessages();
+});
+
+// 确保这些函数在文件末尾被调用
+getUserInfo();
+loadMessages();
