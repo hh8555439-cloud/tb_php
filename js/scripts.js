@@ -48,17 +48,6 @@ function filterSensitiveWords(content) {
   };
 }
 
-// 新增HTML转义函数
-function escapeHtml(unsafe) {
-  if (!unsafe) return unsafe;
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 function getUserInfo() {
   fetch('api.php?action=get_user')
     .then(res => res.json())
@@ -130,7 +119,7 @@ function renderMessages(messages) {
   </div>
   <div class="message-content">${escapeHtml(message.content)}</div>
   <div class="message-actions" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-    <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, -1, ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="margin-left:0;">回复</span>
+    <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, -1, ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')" style="margin-left:0;">回复</span>
     <button class="toggle-comments-btn" data-id="${message.id}">展开评论</button>
   </div>
   <div class="comments-list" id="comments-list-${message.id}" style="display:none;"></div>
@@ -161,7 +150,7 @@ function renderMessages(messages) {
       </div>
       <div class="message-content">${escapeHtml(message.content)}</div>
       <div class="message-actions" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
-        <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, -1, ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="margin-left:0;">回复</span>
+        <span class="reply-btn" onclick="prepareReply(0, ${message.user.id}, -1, ${message.id}, '${message.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')" style="margin-left:0;">回复</span>
         <button class="toggle-comments-btn" data-id="${message.id}">展开评论</button>
       </div>
       <div class="comments-list" id="comments-list-${message.id}" style="display:none;"></div>
@@ -214,7 +203,7 @@ function renderComments(comments, container) {
   </div>
   <div class="comment-content">${escapeHtml(comment.content)}</div>
   <div class="comment-footer">
-    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
+    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
   </div>
 `;
 
@@ -243,7 +232,7 @@ function renderComments(comments, container) {
       </div>
       <div class="comment-content">${escapeHtml(answer.content)}</div>
       <div class="comment-footer">
-        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
+        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
       </div>
     `;
         answersContainer.appendChild(answerElement);
@@ -276,7 +265,7 @@ function renderComments(comments, container) {
   </div>
   <div class="comment-content">${escapeHtml(answer.content)}</div>
   <div class="comment-footer">
-    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
+    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
   </div>
 `;
             answersContainer.appendChild(answerElement);
@@ -313,7 +302,7 @@ function renderComments(comments, container) {
       </div>
       <div class="comment-content">${escapeHtml(comment.content)}</div>
       <div class="comment-footer">
-        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
+        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
       </div>
     `;
         // 二级评论
@@ -340,7 +329,7 @@ function renderComments(comments, container) {
           </div>
           <div class="comment-content">${escapeHtml(answer.content)}</div>
           <div class="comment-footer">
-            <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')">回复</span>
+            <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
           </div>
         `;
             answersContainer.appendChild(answerElement);
@@ -503,7 +492,7 @@ document.getElementById('reply-submit').addEventListener('click', function () {
   }
 
   // 获取敏感词检测结果
-  const { safe, filtered, hits } = filterSensitiveWords(rawContent);
+  let { safe, filtered, hits } = filterSensitiveWords(rawContent);
 
   // 显示敏感词警告
   if (safe == false) {
