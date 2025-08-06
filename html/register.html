@@ -94,7 +94,7 @@
     <button type="submit">注册</button>
 
     <div class="login-link">
-      已有账号？<a href="../login.php">立即登录</a>
+      已有账号？<a href="./login.html">立即登录</a>
     </div>
   </form>
 
@@ -127,7 +127,7 @@
         .then(data => {
           if (data.success) {
             alert('注册成功！');
-            window.location.href = 'login.php';
+            window.location.href = 'login.html';
           } else {
             // 显示错误信息
             for (const [field, message] of Object.entries(data.errors)) {

@@ -1,4 +1,4 @@
-package main
+package _go
 
 import (
 	"comment_demo/database"
@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -31,13 +32,7 @@ func enableCORS(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
 }
 
-func main() {
-	http.HandleFunc("/register", registerHandler)
-	log.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func registerHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	enableCORS(&w)
 
 	if r.Method == "OPTIONS" {

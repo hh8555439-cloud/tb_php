@@ -1,8 +1,6 @@
 package models
 
 import (
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -33,23 +31,23 @@ type User struct {
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
 
-// 密码加密钩子
-func (u *User) BeforeCreate(tx *gorm.DB) error {
-	if u.Password != "" {
-		hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-		if err != nil {
-			return err
-		}
-		u.Password = string(hashed)
-	}
-	return nil
-}
-
-// 密码验证方法
-func (u *User) CheckPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	return err == nil
-}
+//// 密码加密钩子
+//func (u *User) BeforeCreate(tx *gorm.DB) error {
+//	if u.Password != "" {
+//		hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+//		if err != nil {
+//			return err
+//		}
+//		u.Password = string(hashed)
+//	}
+//	return nil
+//}
+//
+//// 密码验证方法
+//func (u *User) CheckPassword(password string) bool {
+//	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+//	return err == nil
+//}
 
 func (User) TableName() string {
 	return "users"

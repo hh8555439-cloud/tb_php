@@ -422,7 +422,7 @@ document.getElementById('submit-comment').onclick = async function () {
   const userId = document.getElementById('user-id').value;
   if (!userId) {
     alert('请先登录后再留言');
-    window.location.href = 'login.php';
+    window.location.href = 'login.html';
     return;
   }
 
@@ -459,7 +459,7 @@ window.prepareReply = function (rootId, toUserId, answerId = -1, goodsId = '', t
   const userId = document.getElementById('user-id').value;
   if (!userId) {
     alert('请先登录后再回复');
-    window.location.href = 'login.php';
+    window.location.href = 'login.html';
     return;
   }
   replyContext = { rootId, toUserId, answerId, goodsId };
