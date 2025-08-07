@@ -49,7 +49,10 @@ function filterSensitiveWords(content) {
 }
 
 function getUserInfo() {
-  fetch('api.php?action=get_user')
+  fetch('http://localhost:8080/api?action=get_user', {
+    method: 'GET',
+    credentials: 'include',
+  })
     .then(res => res.json())
     .then(data => {
       const userInfoDiv = document.getElementById('user-info');
@@ -59,7 +62,7 @@ function getUserInfo() {
         window.currentUserRole = data.data.role; // 这里设置角色
       } else {
         userInfoDiv.innerHTML = `
-  <a href="login.php" id="login-btn" style="
+  <a href="login.html" id="login-btn" style="
     display: inline-block;
     padding: 6px 18px;
     background-color: #1890ff;

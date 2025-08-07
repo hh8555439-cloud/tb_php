@@ -1,4 +1,4 @@
-package _go
+package controller
 
 import (
 	"comment_demo/database"
@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"strings"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type Response struct {
@@ -30,6 +28,7 @@ func enableCORS(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
