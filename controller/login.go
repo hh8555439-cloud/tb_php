@@ -3,6 +3,7 @@ package controller
 import (
 	"comment_demo/database"
 	"comment_demo/models"
+	"comment_demo/utils"
 	"encoding/json"
 	"github.com/gorilla/sessions"
 	"gorm.io/gorm"
@@ -28,22 +29,9 @@ type LoginResponse struct {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-
 	response := LoginResponse{
 		Success: false,
 		Message: "",
-	}
-
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		response.Message = "会话初始化失败"
-		json.NewEncoder(w).Encode(response)
-		return
 	}
 
 	if r.Method == "POST" {
@@ -76,13 +64,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// 设置会话变量
-		session.Values["user_id"] = user.ID
-		session.Values["username"] = request.Username
-		session.Values["role"] = string(user.Role)
-		err = session.Save(r, w)
+		// 生成JWT
+		token, err := utils.GenerateJWT(user.ID, request.Username, string(user.Role))
 		if err != nil {
-			response.Message = "会话保存失败"
+			response.Message = "令牌生成失败"
 			json.NewEncoder(w).Encode(response)
 			return
 		}
@@ -93,6 +78,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		response.User.ID = user.ID
 		response.User.Username = request.Username
 		response.User.Role = string(user.Role)
+		// 设置Cookie
+		http.SetCookie(w, &http.Cookie{
+			Name:     "token",
+			Value:    token,
+			Path:     "/",
+			MaxAge:   86400, // 有效期1天
+			HttpOnly: true,  // 防止XSS攻击
+			Secure:   false, // 如果使用HTTPS，设为true
+			SameSite: http.SameSiteLaxMode,
+		})
 		json.NewEncoder(w).Encode(response)
 	}
 }

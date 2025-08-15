@@ -4,6 +4,7 @@ import (
 	"comment_demo/models"
 	"comment_demo/service"
 	"encoding/json"
+	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"strconv"
 )
@@ -16,37 +17,10 @@ func NewCommentController(svc *service.CommentService) *CommentController {
 	return &CommentController{service: svc}
 }
 
-// ApiHandler 统一处理 /api 路由
-func (cc *CommentController) ApiHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-
-	action := r.URL.Query().Get("action")
-
-	switch action {
-	case "get_comments":
-		cc.getComments(w, r)
-	case "add_comment":
-		cc.addComment(w, r)
-	case "get_user":
-		cc.getUser(w, r)
-	// 你可以继续添加其他 action
-	default:
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"code":    1,
-			"message": "Invalid action",
-		})
-	}
-}
-
-func (cc *CommentController) getUser(w http.ResponseWriter, r *http.Request) {
-	// 假设你用 session 包管理登录状态
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	session, err := store.Get(r, "session-name")
+func (cc *CommentController) GetUser(w http.ResponseWriter, r *http.Request) {
+	// 从Cookie中获取jwt_token
+	cookie, err := r.Cookie("token")
 	if err != nil {
-		// session 获取失败，认为未登录
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"code": 1,
 			"data": nil,
@@ -54,18 +28,32 @@ func (cc *CommentController) getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok1 := session.Values["user_id"].(uint)
-	username, ok2 := session.Values["username"].(string)
-	role, ok3 := session.Values["role"].(string)
+	// 解析JWT令牌
+	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil // 替换为你的JWT密钥
+	})
 
-	if !ok1 || !ok2 || !ok3 {
-		// session 中没有登录信息
+	if err != nil || !token.Valid {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"code": 1,
 			"data": nil,
 		})
 		return
 	}
+
+	// 提取JWT中的用户数据
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code": 1,
+			"data": nil,
+		})
+		return
+	}
+
+	userID := uint(claims["user_id"].(float64))
+	username := claims["username"].(string)
+	role := claims["role"].(string)
 
 	// 返回用户信息
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -78,7 +66,7 @@ func (cc *CommentController) getUser(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (cc *CommentController) getComments(w http.ResponseWriter, r *http.Request) {
+func (cc *CommentController) GetComments(w http.ResponseWriter, r *http.Request) {
 	goodsIDStr := r.URL.Query().Get("goods_id")
 	goodsID, err := strconv.Atoi(goodsIDStr)
 	if err != nil || goodsID <= 0 {
@@ -104,7 +92,7 @@ func (cc *CommentController) getComments(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-func (cc *CommentController) addComment(w http.ResponseWriter, r *http.Request) {
+func (cc *CommentController) AddComment(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"code":    1,

@@ -1,5 +1,4 @@
 // ================= 敏感词过滤模块 =================
-
 // 创建实例
 const search = new WordsSearch();
 // 从文件加载敏感词库
@@ -49,7 +48,7 @@ function filterSensitiveWords(content) {
 }
 
 function getUserInfo() {
-  fetch('http://localhost:8080/api?action=get_user', {
+  fetch('http://localhost:8080/api/get_user', {
     method: 'GET',
     credentials: 'include',
   })
@@ -57,37 +56,50 @@ function getUserInfo() {
     .then(data => {
       const userInfoDiv = document.getElementById('user-info');
       if (data.code === 0 && data.data) {
-        userInfoDiv.innerHTML = `当前用户：${data.data.username} <button onclick="logout()">退出</button>`;
+        userInfoDiv.innerHTML = `当前用户：${data.data.username} <button id="logout-btn">退出</button>`;
+        document.getElementById('logout-btn').addEventListener('click', logout);
         document.getElementById('user-id').value = data.data.id;
-        window.currentUserRole = data.data.role; // 这里设置角色
+        window.currentUserRole = data.data.role;
       } else {
         userInfoDiv.innerHTML = `
-  <a href="login.html" id="login-btn" style="
-    display: inline-block;
-    padding: 6px 18px;
-    background-color: #1890ff;
-    color: #fff;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(24,144,255,0.08);
-    transition: background 0.2s;
-    margin-left: 10px;
-  ">请登录</a>
-`;
+          <a href="login.html" id="login-btn" style="
+            display: inline-block;
+            padding: 6px 18px;
+            background-color: #1890ff;
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(24,144,255,0.08);
+            transition: background 0.2s;
+            margin-left: 10px;
+          ">请登录</a>
+        `;
         document.getElementById('user-id').value = '';
       }
     });
 }
 
 function logout() {
-  window.location.href = 'logout.php';
+  // 调用后端退出接口
+  fetch('http://localhost:8080/logout', {
+    method: 'POST',
+    credentials: 'include' // 确保携带Cookie
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('退出失败');
+    // 跳转到登录页
+    window.location.href = 'login.html';
+  })
+  .catch(error => {
+    console.error('退出错误:', error);
+  });
 }
 getUserInfo();
 
 // 获取所有留言
 function loadMessages() {
-  fetch('api.php?action=get_messages')
+  fetch('http://localhost:8080/get_messages')
     .then(res => res.json())
     .then(data => {
       if (data.code === 0) {
@@ -349,7 +361,7 @@ function renderComments(comments, container) {
 
 // 获取某条留言下的评论
 function loadComments(messageId, container) {
-  fetch(`api.php?action=get_comments&goods_id=${messageId}`)
+  fetch(`http://localhost:8080/get_comments&goods_id=${messageId}`)
     .then(res => res.json())
     .then(data => {
       if (data.code === 0) {
@@ -369,7 +381,7 @@ loadMessages();
 // 删除留言
 function deleteMessage(id) {
   if (!confirm('确定要删除该留言吗？')) return;
-  fetch('api.php?action=delete_message', {
+  fetch('http://localhost:8080/delete_message', {
     method: 'POST',
     body: new URLSearchParams({ id })
   })
@@ -386,7 +398,7 @@ function deleteMessage(id) {
 // 删除评论
 function deleteComment(id, goodsId) {
   if (!confirm('确定要删除该评论吗？')) return;
-  fetch('api.php?action=delete_comment', {
+  fetch('http://localhost:8080/delete_comment', {
     method: 'POST',
     body: new URLSearchParams({ id })
   })
@@ -523,7 +535,7 @@ document.getElementById('reply-submit').addEventListener('click', function () {
     formData.append('type', 'root');
   }
 
-  fetch('api.php?action=add_comment', {
+  fetch('http://localhost:8080/add_comment', {
     method: 'POST',
     body: formData
   })
