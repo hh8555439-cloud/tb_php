@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type CommentController struct {
@@ -148,6 +149,51 @@ func (cc *CommentController) AddComment(w http.ResponseWriter, r *http.Request) 
 	}
 
 	id, err := cc.service.AddComment(comment)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"code": 0,
+		"data": id,
+	})
+}
+
+func (cc *CommentController) AddMessage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "Method not allowed",
+		})
+		return
+	}
+
+	var req struct {
+		UserID  int    `json:"user_id"`
+		Content string `json:"content"`
+	}
+
+	// 解析 JSON 请求体
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "Invalid request body",
+		})
+		return
+	}
+
+	message := models.Messages{
+		UserId:    req.UserID,
+		Content:   req.Content,
+		CreatedAt: time.Now(),
+	}
+
+	id, err := cc.service.AddMessage(message)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"code":    1,

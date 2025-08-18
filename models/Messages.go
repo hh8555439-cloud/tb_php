@@ -2,12 +2,9 @@ package models
 
 import "time"
 
-var messages []struct {
-	ID   uint `json:"id"`
-	User struct {
-		ID   uint   `json:"id"`
-		Name string `json:"name"`
-	} `json:"user"`
+type Messages struct {
+	ID        int       `json:"id"`
+	UserId    int       `json:"user_id"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }

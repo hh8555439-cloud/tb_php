@@ -22,5 +22,5 @@ func SetupRoutes() {
 
 	// 需要保护
 	http.Handle("/api/add_comment", utils.JWTAuthMiddleware(http.HandlerFunc(commentController.AddComment)))
-
+	http.Handle("/api/add_message", utils.JWTAuthMiddleware(http.HandlerFunc(commentController.AddMessage)))
 }

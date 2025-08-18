@@ -2,9 +2,9 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -45,26 +45,38 @@ type key int
 
 const UserContextKey key = 0
 
+type ErrorResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func Unauthorized(w http.ResponseWriter, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Code:    401,
+		Message: message,
+	})
+}
+
 func JWTAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "未授权，缺少 Authorization 头", http.StatusUnauthorized)
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			Unauthorized(w, "未授权，缺少 token")
 			return
 		}
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "未授权，Authorization 格式错误", http.StatusUnauthorized)
-			return
-		}
-		tokenStr := parts[1]
-
-		claims := &Claims{}
-		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
 		if err != nil || !token.Valid {
-			http.Error(w, "未授权，token无效", http.StatusUnauthorized)
+			Unauthorized(w, "未授权，无效的令牌")
+			return
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			Unauthorized(w, "未授权，无法解析令牌内容")
 			return
 		}
 

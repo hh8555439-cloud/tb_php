@@ -452,16 +452,15 @@ document.getElementById('submit-comment').onclick = async function () {
     return;
   }
 
-  // 准备提交数据（使用过滤后的内容）
-  const formData = new FormData();
-  formData.append('user_id', userId);
-  formData.append('content', safe ? rawContent : filtered);
-
   // 执行提交
   try {
     const response = await fetch('http://localhost:8080/api/add_message', {
       method: 'POST',
-      body: formData
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: parseInt(userId),
+        content: safe ? rawContent : filtered
+      })
     });
     const data = await response.json();
 

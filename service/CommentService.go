@@ -161,6 +161,11 @@ func (c *CommentService) AddComment(comment mo.Comment) (int, error) {
 	return c.model.AddComment(comment)
 }
 
+// AddMessage 添加留言，参数直接用models.Message结构体
+func (c *CommentService) AddMessage(message mo.Messages) (int, error) {
+	return c.model.AddMessage(message)
+}
+
 func (c *CommentService) GetMessages() ([]ResponseMessage, error) {
 	messages, err := c.model.GetMessages()
 	if err != nil {

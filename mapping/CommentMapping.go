@@ -52,6 +52,14 @@ func (m *CommentMapping) AddComment(comment models.Comment) (int, error) {
 	return comment.ID, nil
 }
 
+// AddMessage 添加留言
+func (m *CommentMapping) AddMessage(message models.Messages) (int, error) {
+	if err := m.db.Create(&message).Error; err != nil {
+		return 0, err
+	}
+	return message.ID, nil
+}
+
 // GetCommentsByGoods 获取商品所有评论
 func (m *CommentMapping) GetCommentsByGoods(goodsID int) ([]models.Comment, error) {
 	var comments []models.Comment
