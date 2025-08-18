@@ -17,6 +17,22 @@ func NewCommentController(svc *service.CommentService) *CommentController {
 	return &CommentController{service: svc}
 }
 
+func (cc *CommentController) GetMessages(w http.ResponseWriter, r *http.Request) {
+	messages, err := cc.service.GetMessages()
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"code": 0,
+		"data": messages,
+	})
+}
+
 func (cc *CommentController) GetUser(w http.ResponseWriter, r *http.Request) {
 	// 从Cookie中获取jwt_token
 	cookie, err := r.Cookie("token")

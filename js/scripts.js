@@ -4,7 +4,7 @@ const search = new WordsSearch();
 // 从文件加载敏感词库
 async function loadSensitiveWords() {
   try {
-    const response = await fetch('./ToolGoodWords/sensitiveWords.txt');
+    const response = await fetch('../ToolGoodWords/sensitiveWords.txt');
     if (!response.ok) throw new Error('词库加载失败');
     const text = await response.text();
     return text;
@@ -45,6 +45,17 @@ function filterSensitiveWords(content) {
     hits: result,
     safe: result == null
   };
+}
+
+// 新增HTML转义函数
+function escapeHtml(unsafe) {
+  if (!unsafe) return unsafe;
+  return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
 }
 
 function getUserInfo() {
@@ -99,7 +110,7 @@ getUserInfo();
 
 // 获取所有留言
 function loadMessages() {
-  fetch('http://localhost:8080/get_messages')
+  fetch('http://localhost:8080/api/get_messages')
     .then(res => res.json())
     .then(data => {
       if (data.code === 0) {
@@ -210,18 +221,18 @@ function renderComments(comments, container) {
     }
     const commentElement = document.createElement('div');
     commentElement.className = 'comment';
+    console.log(comments);
     commentElement.innerHTML = `
   <div class="comment-header">
-    <span class="user-name">${comment.user.name}</span>
+    <span class="user-name">${comment.user.username}</span>
     <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(comment.create_time).toLocaleString()}</span>
     ${deleteBtn}
   </div>
   <div class="comment-content">${escapeHtml(comment.content)}</div>
   <div class="comment-footer">
-    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
+    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.username.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
   </div>
 `;
-
     // 二级评论
     if (comment.answers && comment.answers.length > 0) {
       const answersContainer = document.createElement('div');
@@ -230,7 +241,7 @@ function renderComments(comments, container) {
       showAnswers.forEach(answer => {
         let replyText = '';
         if (answer.to_user) {
-          replyText = ` 回复 @${answer.to_user.name}`;
+          replyText = ` 回复 @${answer.to_user.username}`;
         }
         let deleteBtn2 = '';
         if (window.currentUserRole === 'admin') {
@@ -240,14 +251,14 @@ function renderComments(comments, container) {
         answerElement.className = 'answer';
         answerElement.innerHTML = `
       <div class="comment-header">
-        <span class="user-name">${answer.user.name}</span>
+        <span class="user-name">${answer.user.username}</span>
         <span>${replyText}</span>
         <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(answer.create_time).toLocaleString()}</span>
         ${deleteBtn2}
       </div>
       <div class="comment-content">${escapeHtml(answer.content)}</div>
       <div class="comment-footer">
-        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
+        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.username.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
       </div>
     `;
         answersContainer.appendChild(answerElement);
@@ -263,7 +274,7 @@ function renderComments(comments, container) {
             // ...渲染 answer 的代码同上...
             let replyText = '';
             if (answer.to_user) {
-              replyText = ` 回复 @${answer.to_user.name}`;
+              replyText = ` 回复 @${answer.to_user.username}`;
             }
             let deleteBtn2 = '';
             if (window.currentUserRole === 'admin') {
@@ -280,7 +291,7 @@ function renderComments(comments, container) {
   </div>
   <div class="comment-content">${escapeHtml(answer.content)}</div>
   <div class="comment-footer">
-    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
+    <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.username.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
   </div>
 `;
             answersContainer.appendChild(answerElement);
@@ -311,13 +322,13 @@ function renderComments(comments, container) {
         commentElement.className = 'comment';
         commentElement.innerHTML = `
       <div class="comment-header">
-        <span class="user-name">${comment.user.name}</span>
+        <span class="user-name">${comment.user.username}</span>
         <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(comment.create_time).toLocaleString()}</span>
         ${deleteBtn}
       </div>
       <div class="comment-content">${escapeHtml(comment.content)}</div>
       <div class="comment-footer">
-        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
+        <span class="reply-btn" onclick="prepareReply(${comment.id}, ${comment.user.id}, ${comment.id}, ${comment.goods_id}, '${comment.user.username.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
       </div>
     `;
         // 二级评论
@@ -327,7 +338,7 @@ function renderComments(comments, container) {
           comment.answers.forEach(answer => {
             let replyText = '';
             if (answer.to_user) {
-              replyText = ` 回复 @${answer.to_user.name}`;
+              replyText = ` 回复 @${answer.to_user.username}`;
             }
             let deleteBtn2 = '';
             if (window.currentUserRole === 'admin') {
@@ -337,14 +348,14 @@ function renderComments(comments, container) {
             answerElement.className = 'answer';
             answerElement.innerHTML = `
           <div class="comment-header">
-            <span class="user-name">${answer.user.name}</span>
+            <span class="user-name">${answer.user.username}</span>
             <span>${replyText}</span>
             <span style="color:#999;font-size:12px;margin-left:10px;">${new Date(answer.create_time).toLocaleString()}</span>
             ${deleteBtn2}
           </div>
           <div class="comment-content">${escapeHtml(answer.content)}</div>
           <div class="comment-footer">
-            <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.name.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
+            <span class="reply-btn" onclick="prepareReply(${comment.id}, ${answer.user.id}, ${answer.id}, ${comment.goods_id}, '${answer.user.username.replace(/'/g, "\\'").replace(/"/g, '"')}')">回复</span>
           </div>
         `;
             answersContainer.appendChild(answerElement);
@@ -361,7 +372,7 @@ function renderComments(comments, container) {
 
 // 获取某条留言下的评论
 function loadComments(messageId, container) {
-  fetch(`http://localhost:8080/get_comments&goods_id=${messageId}`)
+  fetch(`http://localhost:8080/api/get_comments?goods_id=${messageId}`)
     .then(res => res.json())
     .then(data => {
       if (data.code === 0) {
@@ -448,7 +459,7 @@ document.getElementById('submit-comment').onclick = async function () {
 
   // 执行提交
   try {
-    const response = await fetch('api.php?action=add_message', {
+    const response = await fetch('http://localhost:8080/api/add_message', {
       method: 'POST',
       body: formData
     });

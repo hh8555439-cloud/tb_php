@@ -34,6 +34,17 @@ type AnswerComment struct {
 	GoodsID    int       `json:"goods_id"`
 }
 
+// 转换为所需的响应格式
+type ResponseMessage struct {
+	ID   uint `json:"id"`
+	User struct {
+		ID   uint   `json:"id"`
+		Name string `json:"name"`
+	} `json:"user"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type CommentService struct {
 	model *mp.CommentMapping
 }
@@ -66,7 +77,7 @@ func (c *CommentService) GetGoodsComments(goodsID int) ([]RootComment, error) {
 			}
 			userCache[comment.UserID] = User{
 				ID:       userInfo.ID,
-				Username: userInfo.Name,
+				Username: userInfo.Username,
 			}
 		}
 
@@ -102,7 +113,7 @@ func (c *CommentService) GetGoodsComments(goodsID int) ([]RootComment, error) {
 					}
 					userCache[*comment.ToUserID] = User{
 						ID:       userInfo.ID,
-						Username: userInfo.Name,
+						Username: userInfo.Username,
 					}
 				}
 				u := userCache[*comment.ToUserID]
@@ -148,4 +159,28 @@ func (c *CommentService) AddComment(comment mo.Comment) (int, error) {
 	}
 
 	return c.model.AddComment(comment)
+}
+
+func (c *CommentService) GetMessages() ([]ResponseMessage, error) {
+	messages, err := c.model.GetMessages()
+	if err != nil {
+		// 处理错误
+		return nil, err
+	}
+	responseData := make([]ResponseMessage, len(messages))
+	for i, msg := range messages {
+		responseData[i] = ResponseMessage{
+			ID: msg.ID,
+			User: struct {
+				ID   uint   `json:"id"`
+				Name string `json:"name"`
+			}{
+				ID:   msg.UserID,
+				Name: msg.Username,
+			},
+			Content:   msg.Content,
+			CreatedAt: msg.CreatedAt,
+		}
+	}
+	return responseData, nil
 }
