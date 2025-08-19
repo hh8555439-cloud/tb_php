@@ -58,6 +58,45 @@ function escapeHtml(unsafe) {
       .replace(/'/g, "&#039;");
 }
 
+// 删除评论
+window.deleteComment =  function(id, goodsId) {
+  if (!confirm('确定要删除该评论吗？')) return;
+  fetch(`http://localhost:8080/api/delete_comment`, {
+    method: 'POST',
+    credentials: 'include',
+    body: new URLSearchParams({
+      id: id,
+    })
+  })
+      .then(res => res.json())
+      .then(data => {
+        if (data.code === 0) {
+          const commentListDiv = document.getElementById('comments-list-' + goodsId);
+          loadComments(goodsId, commentListDiv); // 只刷新该留言下的评论
+        } else {
+          alert(data.message);
+        }
+      });
+}
+
+// 删除留言
+window.deleteMessage = function(id) {
+  if (!confirm('确定要删除该留言吗？')) return;
+  fetch('http://localhost:8080/api/delete_message', {
+    method: 'POST',
+    credentials: 'include',
+    body: new URLSearchParams({ id })
+  })
+      .then(res => res.json())
+      .then(data => {
+        if (data.code === 0) {
+          loadMessages();
+        } else {
+          alert(data.message);
+        }
+      });
+}
+
 function getUserInfo() {
   fetch('http://localhost:8080/api/get_user', {
     method: 'GET',
@@ -389,41 +428,6 @@ function loadComments(messageId, container) {
 // 页面初始化加载所有留言
 loadMessages();
 
-// 删除留言
-function deleteMessage(id) {
-  if (!confirm('确定要删除该留言吗？')) return;
-  fetch('http://localhost:8080/delete_message', {
-    method: 'POST',
-    body: new URLSearchParams({ id })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.code === 0) {
-        loadMessages();
-      } else {
-        alert(data.message);
-      }
-    });
-}
-
-// 删除评论
-function deleteComment(id, goodsId) {
-  if (!confirm('确定要删除该评论吗？')) return;
-  fetch('http://localhost:8080/delete_comment', {
-    method: 'POST',
-    body: new URLSearchParams({ id })
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.code === 0) {
-        const commentListDiv = document.getElementById('comments-list-' + goodsId);
-        loadComments(goodsId, commentListDiv); // 只刷新该留言下的评论
-      } else {
-        alert(data.message);
-      }
-    });
-}
-
 // 修改留言提交逻辑
 document.getElementById('submit-comment').onclick = async function () {
   const rawContent = document.getElementById('comment-content').value;
@@ -533,21 +537,18 @@ document.getElementById('reply-submit').addEventListener('click', function () {
   const filteredContent = filtered;
   const userId = document.getElementById('user-id').value;
 
-  const formData = new FormData();
-  formData.append('content', filteredContent);
-  formData.append('user_id', userId);
-  formData.append('goods_id', replyContext.goodsId);
-  formData.append('to_user_id', replyContext.toUserId);
-  formData.append('root_id', replyContext.rootId);
-  formData.append('to_answer_id', replyContext.answerId);
-  formData.append('type', 'answer');
-  if (replyContext.rootId == 0) {
-    formData.append('type', 'root');
-  }
-
-  fetch('http://localhost:8080/add_comment', {
+  fetch('http://localhost:8080/api/add_comment', {
     method: 'POST',
-    body: formData
+    credentials: 'include',
+    body: JSON.stringify({
+      content: filteredContent,
+      user_id: parseInt(userId),
+      goods_id: replyContext.goodsId,
+      to_user_id: replyContext.toUserId,
+      root_id: replyContext.rootId,
+      to_answer_id: replyContext.answerId,
+      type: replyContext.rootId == 0 ? 'root' : 'answer'
+    })
   })
     .then(response => response.json())
     .then(data => {

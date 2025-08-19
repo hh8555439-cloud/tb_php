@@ -3,6 +3,7 @@ package controller
 import (
 	"comment_demo/models"
 	"comment_demo/service"
+	"comment_demo/utils"
 	"encoding/json"
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
@@ -146,6 +147,7 @@ func (cc *CommentController) AddComment(w http.ResponseWriter, r *http.Request) 
 		RootID:     req.RootID,
 		ToAnswerID: req.ToAnswerID,
 		Type:       req.Type,
+		CreateTime: time.Now(),
 	}
 
 	id, err := cc.service.AddComment(comment)
@@ -205,5 +207,83 @@ func (cc *CommentController) AddMessage(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"code": 0,
 		"data": id,
+	})
+}
+
+func (cc *CommentController) DeleteComment(w http.ResponseWriter, r *http.Request) {
+	claims := r.Context().Value(utils.UserContextKey)
+	if claims == nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "无授权信息",
+		})
+		return
+	}
+	if claims.(jwt.MapClaims)["role"] != "admin" {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "无权限",
+		})
+		return
+	}
+	commentId, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = nil
+	err = cc.service.DeleteComment(commentId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": err.Error(),
+		})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"code": 0,
+		"data": nil,
+	})
+}
+
+func (cc *CommentController) DeleteMessage(w http.ResponseWriter, r *http.Request) {
+	claims := r.Context().Value(utils.UserContextKey)
+	if claims == nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "无授权信息",
+		})
+		return
+	}
+	if claims.(jwt.MapClaims)["role"] != "admin" {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "无权限",
+		})
+		return
+	}
+	messageId, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": "参数错误",
+		})
+		return
+	}
+	err = nil
+	err = cc.service.DeleteMessage(messageId)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"code":    1,
+			"message": err.Error(),
+		})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"code": 0,
+		"data": nil,
 	})
 }

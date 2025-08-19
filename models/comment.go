@@ -12,4 +12,5 @@ type Comment struct {
 	ToAnswerID *int      `json:"to_answer_id,omitempty"`
 	Type       string    `json:"type"`
 	CreateTime time.Time `json:"create_time"`
+	// 数据库中能存null值的可以用指针形式
 }

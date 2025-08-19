@@ -189,3 +189,12 @@ func (c *CommentService) GetMessages() ([]ResponseMessage, error) {
 	}
 	return responseData, nil
 }
+
+func (c *CommentService) DeleteComment(commentId int) error {
+	err := c.model.DeleteComment(commentId)
+	return err
+}
+
+func (c *CommentService) DeleteMessage(messageId int) error {
+	return c.model.DeleteMessage(messageId)
+}

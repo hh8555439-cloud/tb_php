@@ -85,3 +85,19 @@ func (m *CommentMapping) GetUserInfo(userID int) (UserInfo, error) {
 	}
 	return user, nil
 }
+
+func (m *CommentMapping) DeleteComment(commentId int) error {
+	result := m.db.Table("comments").Where("id = ?", commentId).Delete(nil)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (m *CommentMapping) DeleteMessage(messageId int) error {
+	result := m.db.Table("messages").Where("id = ?", messageId).Delete(nil)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
