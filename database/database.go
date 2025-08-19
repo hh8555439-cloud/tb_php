@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
+	"time"
 )
 
 var DB *gorm.DB
@@ -18,4 +19,12 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
+
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Println(err)
+	}
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 }
